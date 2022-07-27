@@ -1,0 +1,47 @@
+import requests
+import smtplib
+from email.message import EmailMessage
+
+#create your API Key variable from openweathermap.org
+APPID = 'insert your personal 30 character API Key here'
+
+#create url variable
+#replace 'city' with the city you want to get the weather from and APIKEY with your entire 30 character API Key
+url = 'https://api.openweathermap.org/data/2.5/weather?q=city&appid=APIKEY'
+response = requests.get(url)
+
+weatherData = response.json()
+
+#get the current temperature
+current_temp = weatherData["main"]["temp"]
+#convert the temperature from Kelvin to Fahrenheit
+fahrenheit_temp = round(current_temp * 1.8 - 459.67)
+#get the overcast
+overcast = weatherData["main"][0]["description"]
+
+#create a function to send a message from your gmail account
+def text_alert(subject, body, to):
+    msg = EmailMessage()
+    msg.set_content(body)
+    msg['subject'] = subject
+    msg['to'] = to
+
+    #go to https://myaccount.google.com/security and enable two-factor authorization to obtain a Google App Password Key
+    user = "enter your email address here"
+    msg['from'] = user
+    password = "enter your Google App Password Key"
+
+    server = smtplib.SMTP("smtp.gmail.com", 587)
+    server.starttls()
+    server.login(user, password)
+    server.send_message(msg)
+
+    server.quit()
+
+#create resuable module
+#go to https://www.digitaltrends.com/mobile/how-to-send-a-text-from-your-email-account/ to get the desired phone number you want to text
+if __name__ == '__main__':
+    text_alert("Today's Weather", "Current Temp is : " + str(fahrenheit_temp) + " " + "Overcast is: " + str(overcast), "enter desired phone number email here")
+
+#go to https://www.pythonanywhere.com/ to create a free account and upload this file
+#go to the tasks tab and create a recurring task that runs the file at your desired UTC time
